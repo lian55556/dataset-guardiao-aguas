@@ -48,5 +48,5 @@ O dataset contém três classes de comportamento para classificação pela IA:
 O script `gerador_dataset.py` incluído neste repositório permite reproduzir exatamente a mesma distribuição estatística dos dados, garantindo a transparência e reprodutibilidade do experimento.
 
 ---
-**Autores:** [Seu Nome] & [Nome do Orientador]
-**Instituição:** UEPA - Universidade do Estado do Pará
+**Autores:** [Thalisson Lian Gomes Oliveira] & [Hugo]
+**Instituição:** UEPA Campus XV - Universidade do Estado do Pará
