@@ -1,0 +1,77 @@
+import pandas as pd
+import numpy as np
+from datetime import datetime, timedelta
+
+# --- CONFIGURAÇÃO (REPRODUTIBILIDADE) ---
+# Usamos uma 'semente' para que os dados sejam matematicamente explicáveis
+np.random.seed(42)
+
+# Configuração de Tempo (6 meses de dados, coleta de hora em hora)
+data_inicio = datetime(2025, 1, 1)
+num_horas = 24 * 30 * 6  # ~4320 registros
+datas = [data_inicio + timedelta(hours=i) for i in range(num_horas)]
+
+# --- FUNÇÃO GERADORA (CALIBRADA COM DADOS DA ANA) ---
+def gerar_dados_simulados(n):
+    # pH: Base 6.8 (Rio Amazônico) com oscilação normal
+    ph = np.random.normal(loc=6.8, scale=0.15, size=n)
+    
+    # Turbidez (NTU): Base 15 com picos naturais
+    turbidez = np.random.gamma(shape=2.0, scale=10.0, size=n) 
+    
+    # Oxigênio Dissolvido (mg/L)
+    od = np.random.normal(loc=6.5, scale=0.5, size=n)
+    
+    # Temperatura (°C)
+    temp = np.random.normal(loc=28.0, scale=1.5, size=n)
+    
+    # Bateria (V): Simulação do Ciclo Solar
+    bateria = []
+    for i in range(n):
+        hora = datas[i].hour
+        # Dia (carregando) vs Noite (descarregando)
+        if 6 <= hora <= 18:
+            voltagem = 12.8 + np.random.uniform(0, 0.8)
+        else:
+            voltagem = 12.0 - np.random.uniform(0, 0.4)
+        bateria.append(voltagem)
+    
+    return ph, turbidez, od, temp, np.array(bateria)
+
+# Gerar dados base
+ph, turbidez, od, temp, bateria = gerar_dados_simulados(num_horas)
+labels = np.zeros(num_horas, dtype=int) # 0 = Normal
+
+# --- INSERÇÃO DE CENÁRIOS (O QUE O ARTIGO PROMETE) ---
+
+# Cenário 1: Contaminação por Garimpo (Turbidez Alta + pH Ácido)
+# Inserimos 5 eventos de 24h
+for _ in range(5):
+    inicio = np.random.randint(100, num_horas - 100)
+    fim = inicio + 24
+    turbidez[inicio:fim] += np.random.uniform(50, 150, 24) # Pico de lama
+    ph[inicio:fim] -= np.random.uniform(0.5, 1.2, 24) # Acidificação
+    labels[inicio:fim] = 1 # Marca como 'Anomalia de Qualidade'
+
+# Cenário 2: Falha de Bateria (Perda de sinal)
+for _ in range(3):
+    inicio = np.random.randint(100, num_horas - 50)
+    fim = inicio + 10
+    bateria[inicio:fim] = np.random.uniform(9.0, 10.5, 10) # Bateria morrendo
+    turbidez[inicio:fim] = 0 # Sensor falha
+    ph[inicio:fim] = 0
+    labels[inicio:fim] = 2 # Marca como 'Falha de Hardware'
+
+# --- CRIAR E SALVAR ARQUIVO ---
+df = pd.DataFrame({
+    'timestamp': datas,
+    'ph': np.round(ph, 2),
+    'turbidez_ntu': np.round(turbidez, 2),
+    'oxigenio_dissolvido': np.round(od, 2),
+    'temperatura_c': np.round(temp, 2),
+    'bateria_v': np.round(bateria, 2),
+    'label_classificacao': labels
+})
+
+df.to_csv('dataset_guardiao_aguas.csv', index=False)
+print("ARQUIVO GERADO COM SUCESSO!")
