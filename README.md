@@ -1,4 +1,4 @@
-# Guardião das Águas - Monitoramento Hídrico com IA e IoT 💧
+# Guardião das Águas - Monitoramento Hídrico com IA e IoT 
 
 Este repositório contém o conjunto de dados (dataset), os algoritmos de geração **e a implementação da Inteligência Artificial (Redes Neurais LSTM)** utilizados no artigo científico:
 *"Guardião das Águas: Monitoramento Autônomo da Qualidade Hídrica em Territórios Indígenas via Inteligência Artificial e IoT"*
